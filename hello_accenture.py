@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import colorchooser
 from PIL import Image, ImageTk
+import random
 
 
 
@@ -162,7 +163,7 @@ class Application():
                 'image': None,
                 'widget': ttk.Button(self.root, text="pick a background color", command=self.update_color)           },
             {
-                'text': 'It\'s really easy to add images or other media. Check out this cool acorn I drew! Notice how tkinter automatically handles alpha values in a given image.',
+                'text': "It's really easy to add images or other media. Here's an acorn I drew! ",
                 'image': ImageTk.PhotoImage(Image.open("acorn128.png")),
                 'widget': None
             },
@@ -172,7 +173,7 @@ class Application():
                 'widget': ttk.Button(self.root, text="DISPLAY CURRENT SLIDE #", command=self.show_slide_number)
             },
             {
-                'text': 'Check out this cool animation! This ball is not an image, it was drawn by tkinter.',
+                'text': 'Check out this cool animation! This ball is not an image, it was drawn by tkinter, and I wrote a little algorithm to randomize the direction.',
                 'image': None,
                 'widget': self.animation_canvas,
             },
@@ -201,7 +202,7 @@ class Application():
         self.ball = self.animation_canvas.create_oval(10, 10, 30, 30, fill='red', tags="ball")
         self.animation_canvas.move(self.ball, 0, 0)
         self.animation_direction = 1
-        self.animate()
+        
 
     def animate(self):
         # Move the ball back and forth on the canvas
@@ -210,8 +211,16 @@ class Application():
             self.animation_direction = -1
         elif x < 0:
             self.animation_direction = 1
-        self.animation_canvas.move(self.ball, self.animation_direction, 0)
-        self.root.after(10, self.animate)
+        if y2 > self.animation_canvas.winfo_height():
+            self.animation_direction_y = -1
+        elif y < 0:
+            self.animation_direction_y = 1
+        if random.random() < 0.01:
+            self.animation_direction_x = random.choice([-1, 0, 1])
+            self.animation_direction_y = random.choice([-1, 0, 1])
+
+        self.animation_canvas.move(self.ball, self.animation_direction, self.animation_direction_y)
+        self.root.after(30, self.animate)
         
     def handle_slide(self):
         
@@ -233,6 +242,7 @@ class Application():
             self.widget_label=slide['widget']
             if self.current_slide!=6:
                 self.animation_canvas.delete('ball')
+                self.animation_canvas.forget()
             else:
                 self.ball = self.animation_canvas.create_oval(10, 10, 30, 30, fill='red', tags=["ball"])
                 self.animate()
@@ -261,10 +271,7 @@ class Application():
         color_code = colorchooser.askcolor()
         root.configure(background=color_code[1])
    
-    # def update_color(self, value):
-    #     # Convert the slider value to a color code and set the background color
-    #     color_code = f"#{int(value):02x}0000"
-    #     self.root.configure(background=color_code)
+ 
     def show_previous(self):
         self.current_slide -= 1
         self.handle_slide()
